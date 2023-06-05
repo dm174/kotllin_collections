@@ -34,3 +34,15 @@ kotlin {
 application {
     mainClassName = 'Main'
 }
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        csv.enabled = false
+    }
+}
+sourceSets {
+    test {
+        kotlin.srcDir("src/test/kotlin")
+    }
+}
