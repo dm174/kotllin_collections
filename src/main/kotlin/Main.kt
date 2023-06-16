@@ -1,50 +1,97 @@
-class Wall {
-    private var lastId = 0
-    private val posts = mutableListOf<Post>()
-
-    fun generateUniqueId(): Int {
-        return ++lastId
-    }
-
-    fun add(post: Post): Post {
-        val newPost = post.copy(id = generateUniqueId())
-        posts.add(newPost)
-        return newPost
-    }
-
-    fun update(updatedPost: Post): Boolean {
-        val index = posts.indexOfFirst { it.id == updatedPost.id }
-        if (index != -1) {
-            posts[index] = updatedPost
-            return true
-        }
-        return false
-    }
-
-    fun getPostById(id: Int): Post? {
-        return posts.find { it.id == id }
-    }
-}
-
-
-data class Post(val id: Int, val text: String, val author: String)
-
-// Пример использования
 fun main() {
-    val wall = Wall()
+    val note = Note<String>()
 
-    val post1 = Post(0, "Test post 1", "John")
-    val addedPost1 = wall.add(post1)
-    println("Added post 1: $addedPost1")
+    val noteItem = NoteItem(title = "Тестовая Заметка", content = "Это тестовая заметка")
+    val noteId = note.add(noteItem)
+    println("Добавлена заметка с ID: $noteId")
 
-    val post2 = Post(0, "Test post 2", "Alice")
-    val addedPost2 = wall.add(post2)
-    println("Added post 2: $addedPost2")
+    val comment = Comment(content = "Это комментарий")
+    note.createComment(noteId, comment)
+    println("Добавлен комментарий к заметке с ID: $noteId")
 
-    val updatedPost = Post(addedPost1.id, "Updated post 1", "John")
-    val isUpdated = wall.update(updatedPost)
-    println("Post 1 updated: $isUpdated")
+    note.delete(noteId)
+    println("Удалена заметка с ID: $noteId")
 
-    val retrievedPost = wall.getPostById(addedPost1.id)
-    println("Retrieved post: $retrievedPost")
+    val updatedNote = NoteItem(title = "Обновленная Заметка", content = "Это обновленная заметка")
+    note.edit(noteId, updatedNote)
+    println("Отредактирована заметка с ID: $noteId")
+
+    val notes = note.get()
+    println("Все заметки: $notes")
+
+    val retrievedNote = note.getById(noteId)
+    println("Заметка по ID ($noteId): $retrievedNote")
+
+    val comments = note.getComments(noteId)
+    println("Комментарии к заметке с ID ($noteId): $comments")
 }
+
+class Note<T> {
+    private var idCounter: Long = 0
+    private val notes: MutableList<NoteItem<T>> = mutableListOf()
+
+    fun add(noteItem: NoteItem<T>): Long {
+        noteItem.id = ++idCounter
+        notes.add(noteItem)
+        return noteItem.id
+    }
+
+    fun createComment(noteId: Long, comment: Comment<T>) {
+        val note = getById(noteId)
+        note?.comments?.add(comment)
+    }
+
+    fun delete(noteId: Long) {
+        val note = getById(noteId)
+        notes.remove(note)
+    }
+
+    fun deleteComment(noteId: Long, commentId: Long) {
+        val note = getById(noteId)
+        note?.comments?.removeIf { it.id == commentId }
+    }
+
+    fun edit(noteId: Long, updatedNote: NoteItem<T>) {
+        val note = getById(noteId)
+        note?.let {
+            it.title = updatedNote.title
+            it.content = updatedNote.content
+        }
+    }
+
+    fun editComment(noteId: Long, commentId: Long, updatedComment: Comment<T>) {
+        val note = getById(noteId)
+        note?.comments?.forEach { comment ->
+            if (comment.id == commentId) {
+                comment.content = updatedComment.content
+                return@forEach
+            }
+        }
+    }
+
+    fun get(): List<NoteItem<T>> {
+        return notes
+    }
+
+    fun getById(noteId: Long): NoteItem<T>? {
+        return notes.find { it.id == noteId }
+    }
+
+    fun getComments(noteId: Long): List<Comment<T>> {
+        val note = getById(noteId)
+        return note?.comments.orEmpty()
+    }
+}
+
+data class NoteItem<T>(
+    var id: Long = 0,
+    var title: String,
+    var content: T,
+    var comments: MutableList<Comment<T>> = mutableListOf()
+)
+
+data class Comment<T>(
+    var id: Long = 0,
+    var content: T,
+    var isDeleted: Boolean = false
+)

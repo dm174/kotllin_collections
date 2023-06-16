@@ -2,6 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.0'
     id 'application'
     id 'jacoco'
+    id 'java'
 }
 
 group = 'ru.netology'
@@ -10,22 +11,18 @@ version = '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+
 jacoco {
     toolVersion = "0.8.7"
 }
-
 
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-test'
 
     testImplementation 'junit:junit:4.13.1'
-
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
-
 }
-
-
 
 kotlin {
     jvmToolchain(8)
@@ -34,15 +31,15 @@ kotlin {
 application {
     mainClassName = 'Main'
 }
+
+test {
+    useJUnitPlatform()
+}
+
 jacocoTestReport {
     reports {
         xml.enabled = true
         html.enabled = true
         csv.enabled = false
-    }
-}
-sourceSets {
-    test {
-        kotlin.srcDir("src/test/kotlin")
     }
 }
