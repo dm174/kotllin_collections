@@ -1,4 +1,4 @@
-fun main() {
+fun main() { 
     val note = Note<String>()
 
     val noteItem = NoteItem(title = "Тестовая Заметка", content = "Это тестовая заметка")
