@@ -1,8 +1,13 @@
+enum class DeleteAction {
+    DELETE_PERMANENTLY, // Полное удаление комментария
+    MARK_DELETED // Пометка комментария как удаленного
+}
 fun main() {
     val note = Note<String>()
 
     val noteItem = NoteItem(title = "Тестовая Заметка", content = "Это тестовая заметка")
     val noteId = note.add(noteItem)
+
     println("Добавлена заметка с ID: $noteId")
 
     val comment = Comment(id = 1, content = "Это комментарий")
@@ -70,13 +75,15 @@ class Note<T> {
         }
     }
 
-    fun deleteComment(noteId: Long, commentId: Long): Boolean {
+    fun deleteComment(noteId: Long, commentId: Long, action: DeleteAction): Boolean {
         val note = getById(noteId)
         return if (note != null) {
             val comment = note.comments.find { it.id == commentId }
             if (comment != null) {
-                comment.deleted = true // Помечаем комментарий как удаленный
-                note.comments.remove(comment) // Удаляем комментарий из списка только если нужно его полностью удалить
+                when (action) {
+                    DeleteAction.DELETE_PERMANENTLY -> note.comments.remove(comment) // Полное удаление комментария
+                    DeleteAction.MARK_DELETED -> comment.deleted = true // Пометка комментария как удаленного
+                }
                 true
             } else {
                 false
@@ -85,6 +92,7 @@ class Note<T> {
             false
         }
     }
+
 
 
     fun edit(noteId: Long, updatedNote: NoteItem<T>): Boolean {
@@ -123,7 +131,7 @@ class Note<T> {
 
     fun getComments(noteId: Long): List<Comment<T>> {
         val note = getById(noteId)
-        return note?.comments.orEmpty()
+        return note?.comments?.filter { !it.deleted } ?: emptyList()
     }
 
     fun restoreComment(noteId: Long, commentId: Long): Boolean {
