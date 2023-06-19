@@ -73,7 +73,13 @@ class Note<T> {
     fun deleteComment(noteId: Long, commentId: Long): Boolean {
         val note = getById(noteId)
         return if (note != null) {
-            note.comments.removeIf { it.id == commentId }
+            val comment = note.comments.find { it.id == commentId }
+            if (comment != null) {
+                comment.deleted = true
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
