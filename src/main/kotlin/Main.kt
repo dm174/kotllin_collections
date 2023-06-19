@@ -85,6 +85,7 @@ class Note<T> {
         }
     }
 
+
     fun edit(noteId: Long, updatedNote: NoteItem<T>): Boolean {
         val note = getById(noteId)
         return if (note != null) {
