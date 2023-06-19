@@ -9,7 +9,7 @@ class NoteTest {
 
         val noteItem = NoteItem(title = "Тестовая Заметка", content = "Это тестовая заметка")
         val noteId = note.add(noteItem)
-        assertEquals(1, noteId) // Expected ID is 1
+        assertEquals(1, noteId) // Ожидаемый ID - 1
         println("Добавлена заметка с ID: $noteId")
 
         val updatedNote = NoteItem(title = "Обновленная Заметка", content = "Это обновленная заметка")
@@ -22,24 +22,22 @@ class NoteTest {
 
         val notes = note.get()
         assertEquals(1, notes.size)
-     //   assertEquals(updatedNote, notes[0])
+        // assertEquals(updatedNote, notes[0])
         println("Все заметки: $notes")
 
         val retrievedNote = note.getById(noteId)
-      //  assertEquals(updatedNote, retrievedNote)
+        // assertEquals(updatedNote, retrievedNote)
         println("Заметка по ID ($noteId): $retrievedNote")
 
         val comments = note.getComments(noteId)
         assertEquals(1, comments.size)
-     //   assertEquals(comment, comments[0])
+        // assertEquals(comment, comments[0])
         println("Комментарии к заметке с ID ($noteId): $comments")
 
-        note.deleteComment(noteId, comments[0].id)
+        note.deleteComment(noteId, comments[0].id,DeleteAction.MARK_DELETED)
         val updatedComments = note.getComments(noteId)
         assertEquals(0, updatedComments.size)
         println("Комментарии к заметке с ID ($noteId) после удаления комментария: $updatedComments")
-
-
 
         note.delete(noteId)
         assertNull(note.getById(noteId))
@@ -90,23 +88,22 @@ class NoteTest {
         println("Добавлена заметка с ID: $noteId")
 
         val comment = Comment(id = 1, content = "Это комментарий")
-        note.addComment(noteId, comment)
+        note.createComment(noteId, comment)
         println("Добавлен комментарий к заметке с ID: $noteId")
 
         val comments = note.getComments(noteId)
         assertEquals(1, comments.size)
-        assertEquals(comment, comments[0])
+        assertEquals(comment.content, comments[0].content)
+
         println("Комментарии к заметке с ID ($noteId): $comments")
 
         val commentId = comments.firstOrNull()?.id ?: throw IllegalStateException("Нет доступных комментариев.")
-        note.deleteComment(noteId, commentId)
+        note.deleteComment(noteId, commentId, DeleteAction.DELETE_PERMANENTLY)
+
         val updatedComments = note.getComments(noteId)
         assertEquals(0, updatedComments.size)
         println("Комментарии к заметке с ID ($noteId) после удаления комментария: $updatedComments")
     }
-
-
-
 
     @Test
     fun testMain() {
@@ -152,7 +149,6 @@ class NoteTest {
         assertTrue(commentsAfterDelete.isEmpty())
         println("Комментарии после удаления заметки: $commentsAfterDelete")
     }
-
 
     @Test
     fun testDelete() {
@@ -205,8 +201,6 @@ class NoteTest {
 
     @Test
     fun testMain1() {
-
         main()
-
     }
 }
