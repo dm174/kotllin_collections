@@ -5,7 +5,8 @@ fun main() {
     val noteId = note.add(noteItem)
     println("Добавлена заметка с ID: $noteId")
 
-    val comment = Comment(content = "Это комментарий")
+    val comment = Comment(id = 1, content = "Это комментарий")
+
     note.createComment(noteId, comment)
     println("Добавлен комментарий к заметке с ID: $noteId")
 
@@ -27,45 +28,80 @@ fun main() {
 }
 
 class Note<T> {
+
     private var idCounter: Long = 0
     private val notes: MutableList<NoteItem<T>> = mutableListOf()
-
+    fun addComment(noteId: Long, comment: Comment<T>) {
+        val note = getById(noteId)
+        if (note != null) {
+            note.comments.add(comment)
+        } else {
+            throw IllegalArgumentException("Заметка с ID $noteId не существует.")
+        }
+    }
     fun add(noteItem: NoteItem<T>): Long {
         noteItem.id = ++idCounter
         notes.add(noteItem)
         return noteItem.id
     }
 
-    fun createComment(noteId: Long, comment: Comment<T>) {
+    fun createComment(noteId: Long, comment: Comment<T>): Long {
         val note = getById(noteId)
-        note?.comments?.add(comment)
+        if (note != null) {
+            val newComment = Comment(id = generateCommentId(), content = comment.content)
+            note.comments.add(newComment)
+            return noteId // Return the updated note ID
+        } else {
+            throw IllegalArgumentException("Заметка с ID $noteId не существует.")
+        }
     }
-
-    fun delete(noteId: Long) {
-        val note = getById(noteId)
-        notes.remove(note)
+    private fun generateCommentId(): Long {
+        // Generate a unique ID for the comment (e.g., using a counter or a random number generator)
+        // Replace this implementation with your own logic
+        return System.currentTimeMillis()
     }
-
-    fun deleteComment(noteId: Long, commentId: Long) {
+    fun delete(noteId: Long): Boolean {
         val note = getById(noteId)
-        note?.comments?.removeIf { it.id == commentId }
-    }
-
-    fun edit(noteId: Long, updatedNote: NoteItem<T>) {
-        val note = getById(noteId)
-        note?.let {
-            it.title = updatedNote.title
-            it.content = updatedNote.content
+        return if (note != null) {
+            notes.remove(note)
+            true
+        } else {
+            false
         }
     }
 
-    fun editComment(noteId: Long, commentId: Long, updatedComment: Comment<T>) {
+    fun deleteComment(noteId: Long, commentId: Long): Boolean {
         val note = getById(noteId)
-        note?.comments?.forEach { comment ->
-            if (comment.id == commentId) {
+        return if (note != null) {
+            note.comments.removeIf { it.id == commentId }
+        } else {
+            false
+        }
+    }
+
+    fun edit(noteId: Long, updatedNote: NoteItem<T>): Boolean {
+        val note = getById(noteId)
+        return if (note != null) {
+            note.title = updatedNote.title
+            note.content = updatedNote.content
+            true
+        } else {
+            false
+        }
+    }
+
+    fun editComment(noteId: Long, commentId: Long, updatedComment: Comment<T>): Boolean {
+        val note = getById(noteId)
+        return if (note != null) {
+            val comment = note.comments.find { it.id == commentId }
+            if (comment != null) {
                 comment.content = updatedComment.content
-                return@forEach
+                true
+            } else {
+                false
             }
+        } else {
+            false
         }
     }
 
@@ -81,17 +117,37 @@ class Note<T> {
         val note = getById(noteId)
         return note?.comments.orEmpty()
     }
+
+    fun restoreComment(noteId: Long, commentId: Long): Boolean {
+        val note = getById(noteId)
+        return if (note != null) {
+            val comment = note.comments.find { it.id == commentId }
+            if (comment != null) {
+                comment.deleted = false
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+    fun getId(): Long {
+        return idCounter
+    }
+
 }
 
 data class NoteItem<T>(
     var id: Long = 0,
     var title: String,
     var content: T,
-    var comments: MutableList<Comment<T>> = mutableListOf()
+    val comments: MutableList<Comment<T>> = mutableListOf()
 )
 
+
 data class Comment<T>(
-    var id: Long = 0,
+    var id: Long ,
     var content: T,
-    var isDeleted: Boolean = false
+    var deleted: Boolean = false
 )
