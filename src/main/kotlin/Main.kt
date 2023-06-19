@@ -75,7 +75,8 @@ class Note<T> {
         return if (note != null) {
             val comment = note.comments.find { it.id == commentId }
             if (comment != null) {
-                comment.deleted = true
+                comment.deleted = true // Помечаем комментарий как удаленный
+                note.comments.remove(comment) // Удаляем комментарий из списка только если нужно его полностью удалить
                 true
             } else {
                 false
